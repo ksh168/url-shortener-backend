@@ -1,4 +1,4 @@
-package com.urlshortener.api.database;
+package com.urlshortener.api.entity;
 
 import java.time.ZonedDateTime;
 import jakarta.persistence.Column;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "public.public.urlmaster")
+@Table(name = "urlmaster")
 @AllArgsConstructor
 public class UrlMaster {
     @Id
@@ -29,7 +29,7 @@ public class UrlMaster {
     private String shortUrl;
 
     @Column(name = "userid")
-    private String userid;
+    private Long userId;
 
     @Column(name = "createdat")
     private ZonedDateTime createdAt = ZonedDateTime.now();

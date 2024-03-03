@@ -1,4 +1,4 @@
-package com.urlshortener.api.database;
+package com.urlshortener.api.entity;
 
 import java.time.ZonedDateTime;
 import jakarta.persistence.Column;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "public.public.shorturlaccesslog")
+@Table(name = "shorturlaccesslog")
 @AllArgsConstructor
 public class ShortUrlAccessLog {
     @Id
