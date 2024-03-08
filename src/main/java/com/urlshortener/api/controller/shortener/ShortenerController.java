@@ -19,7 +19,14 @@ public class ShortenerController {
     UrlMasterService UrlMasterService;
 
     @GetMapping("/allUrls")
-    private ResponseEntity<List<UrlMaster>> getAllUrlsForUserId(@RequestParam(name = "userId", required = false) Long userId) {
+    private ResponseEntity<List<UrlMaster>> getAllUrlsForUserId(
+            @RequestParam(name = "userId", required = false) Long userId) {
+        return new ResponseEntity<>(UrlMasterService.getAllUrlsForUserId(userId), HttpStatus.OK);
+    }
+
+    @PostMapping("/shorten")
+    private ResponseEntity<List<UrlMaster>> shortenInputUrl(
+            @RequestParam(name = "userId", required = false) Long userId) {
         return new ResponseEntity<>(UrlMasterService.getAllUrlsForUserId(userId), HttpStatus.OK);
     }
 }
