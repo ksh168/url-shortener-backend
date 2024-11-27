@@ -7,27 +7,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "shorturlaccesslog")
-@AllArgsConstructor
+@Table(name = "short_url_access_log")
+@Data
 public class ShortUrlAccessLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "shorturl")
+    @Column(name = "short_url")
     private String shortUrl;
 
-    @Column(name = "accessat")
+    @Column(name = "access_at")
     private ZonedDateTime accessAt = ZonedDateTime.now();
-
-    @Column(name = "ipaddress")
-    private String ipAddress;
 }

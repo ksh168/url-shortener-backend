@@ -1,45 +1,42 @@
 package com.urlshortener.api.entity;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "urlmaster")
-@AllArgsConstructor
-public class UrlMaster {
+@Table(name = "url_mapping")
+@Data
+public class UrlMapping {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "longurl")
+    @Column(name = "long_url")
     private String longUrl;
 
-    @Column(name = "shorturl", unique = true)
+    @Column(name = "short_url", unique = true)
     private String shortUrl;
 
-    @Column(name = "userid")
-    private Long userId;
+    @Column(name = "user_id")
+    private UUID userId;
 
-    @Column(name = "createdat")
+    @Column(name = "created_at")
     private ZonedDateTime createdAt = ZonedDateTime.now();
 
-    @Column(name = "updatedat")
+    @Column(name = "updated_at")
     private ZonedDateTime updatedAt = ZonedDateTime.now();
 
-    @Column(name = "expiresat")
-    private ZonedDateTime expiresAt;
+    @Column(name = "expires_at")
+    private ZonedDateTime expiresAt;// can be used later for setting expiry time
 
-    @Column(name = "isactive")
+    @Column(name = "is_active")
     private Boolean isActive = true;
 }
