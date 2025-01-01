@@ -35,6 +35,9 @@ public class UrlMasterService {
     @Autowired
     private UrlAccessLogService urlAccessLogService;
 
+    @Autowired
+    private RedisCacheService redisCacheService;
+
     public UrlMapping createShortUrl(ShortUrlDto request) {
         // Step 1: Sanitize inputs
         String sanitizedUrl = urlSanitizer.sanitizeUrl(request.getLongUrl());
@@ -66,7 +69,12 @@ public class UrlMasterService {
         }
 
         urlMapping.setShortUrl(shortUrl);
-        return urlMasterRepository.save(urlMapping);
+        UrlMapping savedMapping = urlMasterRepository.save(urlMapping);
+        
+        // Save to Redis cache
+        // redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
+        
+        return savedMapping;
     }
 
     private String generateUniqueShortUrl() {
@@ -102,6 +110,22 @@ public class UrlMasterService {
 
     public UrlMapping getOriginalUrl(String shortUrl) {
         try {
+            // First check Redis cache
+            String cachedLongUrl = redisCacheService.getLongUrl(shortUrl);
+            if (cachedLongUrl != null) {
+                UrlMapping urlMapping = new UrlMapping();
+                urlMapping.setLongUrl(cachedLongUrl);
+                urlMapping.setShortUrl(shortUrl);
+                
+                // Log access asynchronously
+                logUrlAccess(shortUrl);
+                
+                return urlMapping;
+            }
+            
+            // If not in cache, proceed with database lookup
+            
+            //TODO: check if this decoding is necessary
             // First URL decode to handle encoded characters
             String decodedUrl = URLDecoder.decode(shortUrl, StandardCharsets.UTF_8);
 
@@ -116,21 +140,26 @@ public class UrlMasterService {
 
             UrlMapping urlMapping = urlMasterRepository.findByShortUrl(encodedShortUrl)
                     .orElse(null);
-
+                    
             if (urlMapping != null) {
-                // Fire and forget - log access asynchronously
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        urlAccessLogService.logUrlAccess(shortUrl);
-                    } catch (Exception e) {
-                        log.error("Error logging URL access: {}", e.getMessage());
-                    }
-                });
+                // Save to cache for future requests
+                redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
+                logUrlAccess(shortUrl);
             }
-
+            
             return urlMapping;
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid short URL: " + e.getMessage());
         }
+    }
+
+    private void logUrlAccess(String shortUrl) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                urlAccessLogService.logUrlAccess(shortUrl);
+            } catch (Exception e) {
+                log.error("Error logging URL access: {}", e.getMessage());
+            }
+        });
     }
 }
