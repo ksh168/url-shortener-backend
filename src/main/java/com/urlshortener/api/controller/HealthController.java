@@ -12,12 +12,12 @@ public class HealthController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @GetMapping("/health/stats")
+    @GetMapping("/api/health/stats")
     private ResponseEntity<String> workingStatus() {
         return new ResponseEntity<>("Hello There!", HttpStatus.OK);
     }
 
-    @GetMapping("/health/db")
+    @GetMapping("/api/health/db")
     private ResponseEntity<String> dbStatus() {
         try {
             jdbcTemplate.queryForObject("SELECT 1", Integer.class);

@@ -36,4 +36,4 @@ out/
 ### VS Code ###
 .vscode
 src/main/java/com/urlshortener/api/config/config.json
-src/main/resources/application.properties
+src/main/resources/application_og.properties
