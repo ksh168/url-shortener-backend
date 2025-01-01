@@ -1,4 +1,4 @@
-package com.urlshortener.api.utils;
+package com.urlshortener.api.validators;
 
 import org.springframework.stereotype.Component;
 

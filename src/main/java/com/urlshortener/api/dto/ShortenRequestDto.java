@@ -10,7 +10,7 @@ import org.springframework.lang.Nullable;
 
 @Getter
 @Setter
-public class ShortUrlDto {
+public class ShortenRequestDto {
     @NotBlank(message = "Long URL cannot be empty")
     @URL(message = "Please provide a valid URL")
     @Size(max = 2048, message = "URL length cannot exceed 2048 characters")
@@ -20,6 +20,6 @@ public class ShortUrlDto {
     private UUID userId;
 
     @Nullable
-    @Size(min = 3, max = 30, message = "Custom alias must be at least 3 and max 30 characters long")
+    @Size(min = 3, max = 32, message = "Custom alias must be at least 3 and max 32 characters long")
     private String customAlias;
 }

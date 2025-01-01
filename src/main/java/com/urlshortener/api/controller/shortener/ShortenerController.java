@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.urlshortener.api.dto.ShortUrlDto;
+import com.urlshortener.api.dto.ShortenRequestDto;
 import com.urlshortener.api.dto.UrlShortenResponse;
 import com.urlshortener.api.entity.UrlMapping;
 import com.urlshortener.api.services.UrlMasterService;
@@ -26,7 +26,7 @@ public class ShortenerController {
     UrlMasterService UrlMasterService;
 
     @PostMapping("/api/shorten")
-    public ResponseEntity<UrlShortenResponse> shortenUrl(@Valid @RequestBody ShortUrlDto shortUrlRequest,
+    public ResponseEntity<UrlShortenResponse> shortenUrl(@Valid @RequestBody ShortenRequestDto shortUrlRequest,
             HttpServletRequest request) {
         try {
             UrlMapping shortened = UrlMasterService.createShortUrl(shortUrlRequest);
@@ -50,12 +50,15 @@ public class ShortenerController {
     @GetMapping("/{shortUrl}")
     public ResponseEntity<?> redirectToOriginalUrl(@PathVariable(name = "shortUrl") String shortUrl) {
         try {
+            UrlMasterService.validateShortUrl(shortUrl);
+
             UrlMapping urlMapping = UrlMasterService.getOriginalUrl(shortUrl);
             if (urlMapping != null) {
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("Location", urlMapping.getLongUrl());
                 return new ResponseEntity<>(headers, HttpStatus.FOUND);
             }
+
             return new ResponseEntity<>("Short URL not found", HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("Error processing request: " + e.getMessage(),

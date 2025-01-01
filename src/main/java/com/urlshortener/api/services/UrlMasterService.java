@@ -1,19 +1,19 @@
 package com.urlshortener.api.services;
 
 import java.security.SecureRandom;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.urlshortener.api.constants.AppConstants;
-import com.urlshortener.api.dto.ShortUrlDto;
+import com.urlshortener.api.dto.ShortenRequestDto;
 import com.urlshortener.api.entity.UrlMapping;
 import com.urlshortener.api.mapper.UrlMasterRepository;
+import com.urlshortener.api.utils.CheckCache;
+import com.urlshortener.api.utils.CheckDb;
 import com.urlshortener.api.utils.NanoIdUtils;
-import com.urlshortener.api.utils.UrlValidator;
-import com.urlshortener.api.utils.UrlSanitizer;
+import com.urlshortener.api.validators.UrlSanitizer;
+import com.urlshortener.api.validators.UrlValidator;
 import com.urlshortener.api.utils.UrlEncoder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,9 +36,12 @@ public class UrlMasterService {
     private UrlAccessLogService urlAccessLogService;
 
     @Autowired
-    private RedisCacheService redisCacheService;
+    private CheckCache checkCache;
 
-    public UrlMapping createShortUrl(ShortUrlDto request) {
+    @Autowired
+    private CheckDb checkDb;
+
+    public UrlMapping createShortUrl(ShortenRequestDto request) {
         // Step 1: Sanitize inputs
         String sanitizedUrl = urlSanitizer.sanitizeUrl(request.getLongUrl());
         String sanitizedAlias = urlSanitizer.sanitizeCustomAlias(request.getCustomAlias());
@@ -70,10 +73,10 @@ public class UrlMasterService {
 
         urlMapping.setShortUrl(shortUrl);
         UrlMapping savedMapping = urlMasterRepository.save(urlMapping);
-        
+
         // Save to Redis cache
         // redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
-        
+
         return savedMapping;
     }
 
@@ -111,49 +114,23 @@ public class UrlMasterService {
     public UrlMapping getOriginalUrl(String shortUrl) {
         try {
             // First check Redis cache
-            String cachedLongUrl = redisCacheService.getLongUrl(shortUrl);
-            if (cachedLongUrl != null) {
-                UrlMapping urlMapping = new UrlMapping();
-                urlMapping.setLongUrl(cachedLongUrl);
-                urlMapping.setShortUrl(shortUrl);
-                
-                // Log access asynchronously
-                logUrlAccess(shortUrl);
-                
-                return urlMapping;
-            }
-            
+            UrlMapping urlMapping = checkCache.checkRedisCacheForShortUrl(shortUrl);
+
             // If not in cache, proceed with database lookup
-            
-            //TODO: check if this decoding is necessary
-            // First URL decode to handle encoded characters
-            String decodedUrl = URLDecoder.decode(shortUrl, StandardCharsets.UTF_8);
-
-            // Then sanitize
-            String sanitizedShortUrl = urlSanitizer.sanitizeCustomAlias(decodedUrl);
-
-            // Then validate
-            urlValidator.validateCustomAlias(sanitizedShortUrl);
-
-            // Finally encode for database lookup
-            String encodedShortUrl = urlEncoder.encodeCustomAlias(sanitizedShortUrl);
-
-            UrlMapping urlMapping = urlMasterRepository.findByShortUrl(encodedShortUrl)
-                    .orElse(null);
-                    
-            if (urlMapping != null) {
-                // Save to cache for future requests
-                redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
-                logUrlAccess(shortUrl);
+            if (urlMapping == null) {
+                urlMapping = checkDb.checkDbForShortUrl(shortUrl);
             }
-            
+
+            // Log access asynchronously
+            logUrlAccess(shortUrl);
+
             return urlMapping;
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid short URL: " + e.getMessage());
         }
     }
 
-    private void logUrlAccess(String shortUrl) {
+    public void logUrlAccess(String shortUrl) {
         CompletableFuture.runAsync(() -> {
             try {
                 urlAccessLogService.logUrlAccess(shortUrl);
@@ -161,5 +138,9 @@ public class UrlMasterService {
                 log.error("Error logging URL access: {}", e.getMessage());
             }
         });
+    }
+
+    public void validateShortUrl(String shortUrl) {
+        urlValidator.validateCustomAlias(shortUrl);
     }
 }

@@ -3,10 +3,12 @@ package com.urlshortener.api.utils;
 import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
+import com.urlshortener.api.constants.AppConstants;
+
 @Component
 public class NanoIdUtils {
     private static final SecureRandom DEFAULT_NUMBER_GENERATOR = new SecureRandom();
-    private static final char[] DEFAULT_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
+    private static final char[] DEFAULT_ALPHABET = AppConstants.DEFAULT_ALPHABET.toCharArray();
 
     public static String randomNanoId(SecureRandom random, char[] alphabet, int size) {
         if (random == null) {

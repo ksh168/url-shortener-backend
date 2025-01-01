@@ -1,13 +1,13 @@
-package com.urlshortener.api.utils;
+package com.urlshortener.api.validators;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
+
+import com.urlshortener.api.constants.AppConstants;
 
 @Component
 public class UrlValidator {
@@ -15,32 +15,15 @@ public class UrlValidator {
     private static final int MIN_ALIAS_LENGTH = 3;
     private static final int MAX_ALIAS_LENGTH = 30;
 
-    private static final Pattern URL_PATTERN = Pattern.compile(
-            "^(https?://)" + // protocol
-                    "((([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,63})|" + // domain name
-                    "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))" + // OR ip address
-                    "(:\\d{1,5})?" + // optional port
-                    "(/[a-zA-Z0-9._/-]*)*" + // path
-                    "(\\?[a-zA-Z0-9._&=+%-]*)?"); // query parameters
+    private static final Pattern URL_PATTERN = AppConstants.URL_PATTERN;
 
     // Updated pattern to allow starting with underscore or hyphen
-    private static final Pattern CUSTOM_ALIAS_PATTERN = Pattern.compile(
-            "^[-_a-zA-Z0-9]" + // Start with hyphen, underscore, or alphanumeric
-                    "[-_a-zA-Z0-9 ]*" + // Allow any number of hyphen, underscore, alphanumeric, and space in middle
-                    "[-_a-zA-Z0-9]$" // End with hyphen, underscore, or alphanumeric
-    );
+    private static final Pattern CUSTOM_ALIAS_PATTERN = AppConstants.CUSTOM_ALIAS_PATTERN;
 
-    private static final Set<String> RESERVED_ALIASES = new HashSet<>(Arrays.asList(
-            "admin", "api", "login", "logout", "signup", "register", "dashboard",
-            "settings", "profile", "about", "contact", "terms", "privacy", "help",
-            "support", "static", "images", "css", "js", "favicon", "shorten"));
+    private static final Set<String> RESERVED_ALIASES = AppConstants.RESERVED_ALIASES;
 
-    private static final Set<String> ALLOWED_PROTOCOLS = new HashSet<>(Arrays.asList("http", "https"));
-    private static final Set<String> BLOCKED_DOMAINS = new HashSet<>(Arrays.asList(
-            "example.com",
-            "malicious-site.com"
-    // Add more blocked domains as needed
-    ));
+    private static final Set<String> ALLOWED_PROTOCOLS = AppConstants.ALLOWED_PROTOCOLS;
+    private static final Set<String> BLOCKED_DOMAINS = AppConstants.BLOCKED_DOMAINS;
 
     public void validateUrl(String url) {
         if (url == null || url.isEmpty()) {
@@ -91,7 +74,7 @@ public class UrlValidator {
 
         if (!CUSTOM_ALIAS_PATTERN.matcher(alias).matches()) {
             throw new IllegalArgumentException(
-                    "Custom alias can only contain letters, numbers, hyphens, underscores, and spaces");
+                    "Custom alias can only contain letters, numbers, hyphens, underscores");
         }
 
         if (RESERVED_ALIASES.contains(alias.toLowerCase())) {
