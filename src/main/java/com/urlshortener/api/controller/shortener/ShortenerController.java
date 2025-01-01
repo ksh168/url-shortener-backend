@@ -1,7 +1,6 @@
 package com.urlshortener.api.controller.shortener;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +14,7 @@ import com.urlshortener.api.dto.UrlShortenResponse;
 import com.urlshortener.api.entity.UrlMapping;
 import com.urlshortener.api.services.UrlMasterService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
@@ -22,16 +22,15 @@ import org.springframework.http.HttpHeaders;
 @RestController
 public class ShortenerController {
 
-    @Value("${app.base-url:http://localhost:8080}")
-    private String baseUrl;
-
     @Autowired
     UrlMasterService UrlMasterService;
 
-    @PostMapping("/shorten")
-    public ResponseEntity<UrlShortenResponse> shortenUrl(@Valid @RequestBody ShortUrlDto request) {
+    @PostMapping("/api/shorten")
+    public ResponseEntity<UrlShortenResponse> shortenUrl(@Valid @RequestBody ShortUrlDto shortUrlRequest,
+            HttpServletRequest request) {
         try {
-            UrlMapping shortened = UrlMasterService.createShortUrl(request);
+            UrlMapping shortened = UrlMasterService.createShortUrl(shortUrlRequest);
+            String baseUrl = getBaseUrl(request);
             String fullShortUrl = baseUrl + "/" + shortened.getShortUrl();
 
             UrlShortenResponse response = new UrlShortenResponse(
@@ -62,5 +61,9 @@ public class ShortenerController {
             return new ResponseEntity<>("Error processing request: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private String getBaseUrl(HttpServletRequest request) {
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
     }
 }

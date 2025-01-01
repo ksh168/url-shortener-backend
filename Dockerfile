@@ -1,5 +1,5 @@
-# Use OpenJDK 17 as the base image
-FROM eclipse-temurin:17-jdk-jammy as builder
+# Use OpenJDK 17 as the base image with specified platform
+FROM --platform=linux/amd64 eclipse-temurin:21-jdk-jammy as builder
 
 # Set working directory
 WORKDIR /app
@@ -19,8 +19,8 @@ RUN chmod +x ./gradlew
 # Build the application
 RUN ./gradlew build -x test
 
-# Create runtime image
-FROM eclipse-temurin:17-jre-jammy
+# Create runtime image with specified platform
+FROM --platform=linux/amd64 eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
