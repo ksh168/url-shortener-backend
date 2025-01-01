@@ -4,17 +4,39 @@ A robust URL shortening service built with Spring Boot that converts long URLs i
 
 ## Features
 
-- URL Shortening: Convert long URLs into short, unique identifiers
-- URL Redirection: Redirect users from short URLs to original long URLs
-- Persistence: Store URL mappings in a database
-- Logging: Record access history
-- RESTful API: Simple and intuitive API endpoints
+- URL Shortening
+  - Convert long URLs into short, unique identifiers
+  - Custom alias support (3-32 characters)
+  - Secure random generation for short URLs
+  - URL validation and sanitization
+  - Blocked domain protection
+
+- URL Redirection
+  - Fast redirection from short URLs to original URLs using redis cache
+  - Support for HTTP and HTTPS protocols
+  - URL length validation (max 2048 characters)
+  - Protection against malformed URLs
+
+- Security
+  - Input validation and sanitization
+  - Protection against reserved aliases
+  - Blocked domain list
+  - Secure random URL generation
+
+- Caching & Performance
+  - Redis caching support
+  - Asynchronous access logging
+
+- Persistence
+  - Database storage for URL mappings
+  - Access logging and analytics
 
 ## Technologies Used
 
 - Java 17
 - Spring Boot
 - Spring Data JPA
+- Redis Cache
 - H2 Database (can be configured for other databases)
 - Gradle
 - RESTful APIs
@@ -23,6 +45,7 @@ A robust URL shortening service built with Spring Boot that converts long URLs i
 
 - Java 17 or higher
 - Gradle 7.x or higher
+- Redis (optional, for caching)
 
 ## Getting Started
 
@@ -44,13 +67,22 @@ A robust URL shortening service built with Spring Boot that converts long URLs i
 
 The application will start on `http://localhost:8080`
 
+## API Endpoints
+
+- `POST /api/shorten` - Create a short URL
+- `GET /{shortUrl}` - Redirect to original URL
+- `GET /api/health/stats` - Check service health
+
 ## Configuration
 
 The application can be configured through `src/main/resources/application.properties`. Key configurations include:
 
 - Server port
 - Database settings
+- Redis cache settings
 - URL shortening settings
+- Blocked domains list
+- Reserved aliases
 
 ## Contributing
 
