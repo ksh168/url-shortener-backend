@@ -113,10 +113,15 @@ public class UrlMasterService {
 
     public UrlMapping getOriginalUrl(String shortUrl) {
         try {
-            // First check Redis cache
-            UrlMapping urlMapping = checkCache.checkRedisCacheForShortUrl(shortUrl);
+            // First try Redis cache, but don't block on failure
+            UrlMapping urlMapping = null;
+            try {
+                urlMapping = checkCache.checkRedisCacheForShortUrl(shortUrl);
+            } catch (Exception e) {
+                log.warn("Redis cache check failed, falling back to database");
+            }
 
-            // If not in cache, proceed with database lookup
+            // If not in cache or cache failed, proceed with database lookup
             if (urlMapping == null) {
                 urlMapping = checkDb.checkDbForShortUrl(shortUrl);
             }

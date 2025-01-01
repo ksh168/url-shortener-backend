@@ -29,8 +29,8 @@ public class RedisCacheService {
             redisTemplate.opsForValue().set(key, longUrl, Duration.ofSeconds(timeoutInSeconds));
             log.info("Saved URL mapping to Redis: {} -> {} with TTL: {}s", shortUrl, longUrl, timeoutInSeconds);
         } catch (Exception e) {
-            log.error("Error saving to Redis: {} - Cause: {}", e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "Unknown");
-            throw new RuntimeException("Failed to save to Redis cache", e);
+            log.warn("Failed to save to Redis cache: {} - Cause: {}", e.getMessage(), 
+                    e.getCause() != null ? e.getCause().getMessage() : "Unknown");
         }
     }
 
@@ -47,8 +47,9 @@ public class RedisCacheService {
 
             return longUrl;
         } catch (Exception e) {
-            log.error("Error retrieving from Redis: {} - Cause: {}", e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "Unknown");
-            throw new RuntimeException("Failed to retrieve from Redis cache", e);
+            log.warn("Failed to retrieve from Redis cache: {} - Cause: {}", e.getMessage(), 
+                    e.getCause() != null ? e.getCause().getMessage() : "Unknown");
+            return null; // Return null instead of throwing exception
         }
     }
 }

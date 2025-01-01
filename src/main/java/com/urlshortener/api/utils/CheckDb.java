@@ -11,8 +11,10 @@ import com.urlshortener.api.mapper.UrlMasterRepository;
 import com.urlshortener.api.services.RedisCacheService;
 import com.urlshortener.api.validators.UrlSanitizer;
 import com.urlshortener.api.validators.UrlValidator;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class CheckDb {
     @Autowired
     private UrlMasterRepository urlMasterRepository;
@@ -50,8 +52,12 @@ public class CheckDb {
                     .orElse(null);
 
             if (urlMapping != null) {
-                // Save to cache for future requests
-                redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
+                // Try to save to cache, but don't block if it fails
+                try {
+                    redisCacheService.saveUrlMapping(shortUrl, urlMapping.getLongUrl());
+                } catch (Exception e) {
+                    log.warn("Failed to update Redis cache, continuing with database result");
+                }
             } else {
                 throw new IllegalArgumentException("Short URL not found in database");
             }
