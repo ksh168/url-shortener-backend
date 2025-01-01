@@ -64,6 +64,6 @@ public class ShortenerController {
     }
 
     private String getBaseUrl(HttpServletRequest request) {
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        return request.getScheme() + "://" + request.getServerName();
     }
 }
