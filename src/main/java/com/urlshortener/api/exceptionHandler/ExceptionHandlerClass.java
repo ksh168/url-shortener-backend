@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.urlshortener.api.dto.UrlShortenResponse;
+
 import javax.management.InstanceAlreadyExistsException;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,24 +19,30 @@ import java.util.Map;
 public class ExceptionHandlerClass {
 
     @ExceptionHandler(value = EntityNotFoundException.class)
-    public ResponseEntity<String> exception(EntityNotFoundException exception) {
+    public ResponseEntity<UrlShortenResponse> exception(EntityNotFoundException exception) {
         log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(
+                new UrlShortenResponse(false, exception.getMessage(), null),
+                HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = InstanceAlreadyExistsException.class)
-    public ResponseEntity<String> alreadyExistException(InstanceAlreadyExistsException exception) {
+    public ResponseEntity<UrlShortenResponse> alreadyExistException(InstanceAlreadyExistsException exception) {
         log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                new UrlShortenResponse(false, exception.getMessage(), null),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<UrlShortenResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errors.put(error.getField(), error.getDefaultMessage());
         });
 
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                new UrlShortenResponse(false, "Validation failed: " + errors.toString(), null),
+                HttpStatus.BAD_REQUEST);
     }
 }

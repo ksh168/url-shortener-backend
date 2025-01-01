@@ -59,9 +59,12 @@ public class ShortenerController {
                 return new ResponseEntity<>(headers, HttpStatus.FOUND);
             }
 
-            return new ResponseEntity<>("Short URL not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(
+                    new UrlShortenResponse(false, "Short URL not found", null),
+                    HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return new ResponseEntity<>("Error processing request: " + e.getMessage(),
+            return new ResponseEntity<>(
+                    new UrlShortenResponse(false, "Error processing request: " + e.getMessage(), null),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
